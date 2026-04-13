@@ -22,6 +22,7 @@
 
 # %%
 import joblib
+import skops.io as sio
 import skrub
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -62,7 +63,7 @@ lr
 
 # %%
 lr.fit(X, y_simplified)
-joblib.dump(lr, "model_logistic_regression.pkl")
+sio.dump(lr, "model_logistic_regression.skops")
 
 # %% [markdown]
 # ## Random Forest
@@ -77,7 +78,7 @@ rf
 
 # %%
 rf.fit(X, y_simplified)
-joblib.dump(rf, "model_random_forest.pkl")
+sio.dump(rf, "model_random_forest.skops")
 
 # %% [markdown]
 # ## Gradient Boosting
@@ -91,4 +92,19 @@ gb
 
 # %%
 gb.fit(X, y_simplified)
-joblib.dump(gb, "model_gradient_boosting.pkl")
+sio.dump(gb, "model_gradient_boosting.skops")
+
+# %% [markdown]
+# ## Chargement securise avec skops
+#
+# Avec skops.io, le chargement d'un modele necessite de specifier explicitement
+# les types de confiance. Si le fichier contient des classes inconnues ou
+# malveillantes, le chargement echoue au lieu d'executer du code arbitraire
+# (contrairement a pickle/joblib).
+
+# %%
+unknown_types = sio.get_untrusted_types(file="model_logistic_regression.skops")
+print("Types a valider avant chargement :", unknown_types)
+
+lr_loaded = sio.load("model_logistic_regression.skops", trusted=unknown_types)
+print("Modele charge en securite :", type(lr_loaded))
